@@ -1,0 +1,6 @@
+[submodule "config"]
+	path = config
+	url = git@ssh.github.com:insidepower/confignewpc.git
+[submodule "pythont"]
+	path = pythont
+	url = git@ssh.github.com:insidepower/pythontest.git
