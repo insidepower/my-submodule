@@ -4,3 +4,9 @@
 [submodule "pythont"]
 	path = pythont
 	url = git@ssh.github.com:insidepower/pythontest.git
+[submodule "sub-dir2"]
+	path = sub-dir2
+	url = git@github.com:insidepower/sub-dir2.git
+[submodule "sub-dir1"]
+	path = sub-dir1
+	url = git@github.com:insidepower/sub-dir1.git
