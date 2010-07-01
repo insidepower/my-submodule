@@ -1,0 +1,21 @@
+function start()
+{
+	# init submodule to .git/config
+	git submodule init
+	# cloning submodules
+	git submodule update
+}
+
+function sync()
+{
+	read -p "Ready to proceed? All uncommmited changes will be discarded " YESNO
+	if [ "y" = "$YESNO" ] ; then
+		echo "getting updates from server..."
+		git pull
+		echo ""
+		echo "trying to update submodules..."
+		git submodule update
+	fi
+}
+
+$1
