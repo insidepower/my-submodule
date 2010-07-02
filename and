@@ -1,20 +1,59 @@
+REMOTE_REF=origin
+BASE_REVISION=master
+
 function start()
 {
 	# init submodule to .git/config
+	echo "initialize sub-projects"
 	git submodule init
-	# cloning submodules
+	# cloning submodules, detached head
+	echo "cloninig sub-projects"
 	git submodule update
+	# checkout branch
+	echo "checkout each sub-project to " $BASE_REVISION
+	git submodule foreach git checkout $BASE_REVISION
 }
 
 function sync()
 {
-	read -p "Ready to proceed? All uncommmited changes will be discarded " YESNO
-	if [ "y" = "$YESNO" ] ; then
-		echo "getting updates from server..."
-		git pull
-		echo ""
-		echo "trying to update submodules..."
-		git submodule update
+	# TODO: check if pull will affect submodule,
+	#       afaik, git submodule update will checkout a detached commits,
+	#       thus all commits in the same branch will be reseted!!
+	echo "getting top level updates from server..."
+	git pull $REMOTE_REF $BASE_REVISION
+	echo "\nupdating(pull) all android projects..."
+	git submodule foreach git pull $REMOTE_REF $BASE_REVISION
+}
+
+function commit()
+{
+	MSG=""
+	# sync top level with remote server
+	if [ -f "$PWD/.gitmodules" ] ; then
+		for file in `git ls-files -m` ; do
+			read -p "git add $file? (y/n)" YESNO
+			if [ "y" = $YESNO ] ; then
+				pushd $file
+				git fetch $REMOTE_REF
+				## check if the changes in current sub-project has been pushed to remote server
+				## this is to make sure that remote server always has the latest changes before
+				## top level commit
+				IS_UPDATED=`git log $REMOTE_REF/$BASE_REVISION..$BASE_REVISION | wc -l`
+				if [ $IS_UPDATED -gt 0 ]; then
+					echo "this project ($file) is not pushed to server yet? Operation aborted."
+					echo -n "local last commit : " `git log -n1`
+					echo -n "remote last commit: " `git log $REMOTE_REF/$BASE_REVISION -n1`
+					exit
+				else
+					git add $file
+				fi
+			fi
+		done
+		git fetch $REMOTE_REF
+		git rebase $REMOTE_REF/$BASE_REVISION $BASE_REVISION
+	else
+		echo - "Please execute this operation at top level directory"
+		echo "(i.e. directory with .gitmodule file)"
 	fi
 }
 
